@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Party mise</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #050505;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+}
+
+#game-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: clamp(12px, 3.5vw, 20px);
+}
+
+/* Error text */
+.error {
+  display: none;
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* Karty */
+.pm-card {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: clamp(14px, 4vw, 20px);
+  margin: clamp(14px, 4vw, 25px) auto;
+  max-width: 700px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(255,0,200,0.3);
+  animation: fadeIn 0.7s ease-out;
+}
+
+/* Tlačítka */
+.pm-btn {
+  background: linear-gradient(45deg, #ff00cc, #00eaff);
+  border: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  min-height: 44px;
+  font-size: clamp(1rem, 2.8vw, 1.1rem);
+  transition: 0.2s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pm-btn:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Input spacing */
+#password-screen input,
+.pm-card input {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px;
+  font-size: clamp(1rem, 2.8vw, 1.1rem);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+#password-screen h2,
+.pm-card h2 {
+  margin-top: 0;
+  font-size: clamp(1.2rem, 4.6vw, 1.7rem);
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 16px;
+  }
+
+  .pm-card {
+    border-radius: 14px;
+  }
+}
+
+/* Fade-in animace */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Konfety */
+#confetti {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 9999;
+  display: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 6px;
+  height: 10px;
+  opacity: 0.9;
+  animation: confetti-fall 1.8s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) rotateZ(0deg); }
+  100% { transform: translateY(110vh) rotateZ(360deg); }
+}
+</style>
+</head>
+
+<body>
+
+<div id="confetti"></div>
+
+<div id="game-container">
+
+<!-- ÚVODNÍ HESLO -->
+<div id="password-screen" class="fade-in">
+  <h2>Zadej vstupní heslo</h2>
+  <input id="password-input" type="text" placeholder="Heslo">
+  <button class="pm-btn" onclick="checkPassword()">Potvrdit</button>
+  <p id="password-error" class="error">Špatné heslo</p>
+</div>
+
+<div id="missions"></div>
+
+<script>
+/* ====== KONFETY ====== */
+function triggerConfetti() {
+  const confettiContainer = document.getElementById('confetti');
+  confettiContainer.innerHTML = '';
+  confettiContainer.style.display = 'block';
+
+  const colors = ['#ff00cc', '#00eaff', '#ffff00', '#ff8800', '#00ff88'];
+
+  for (let i = 0; i < 50; i++) {
+    const piece = document.createElement('div');
+    piece.classList.add('confetti-piece');
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.6) + 's';
+    confettiContainer.appendChild(piece);
+  }
+
+  setTimeout(() => {
+    confettiContainer.style.display = 'none';
+    confettiContainer.innerHTML = '';
+  }, 2000);
+}
+
+/* ====== 1) VSTUPNÍ HESLO ====== */
+function checkPassword() {
+  const input = document.getElementById("password-input").value.trim().toLowerCase();
+  if (input === "oblicej") {
+    document.getElementById("password-screen").style.display = "none";
+    triggerConfetti();
+    showFirstMission();
+  } else {
+    document.getElementById("password-error").style.display = "block";
+  }
+}
+
+/* ====== 2) PRVNÍ MÍSTO ====== */
+function showFirstMission() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Místo 1</h2>
+      <p>Nastup do vlaku v <strong>16:56</strong> směr <strong>Skalice nad Svitavou</strong>.<br>
+      Po splnění úkolu zjistíš, kde vystoupit.</p>
+      <button class="pm-btn" onclick="showTask1()">Úkol</button>
+    </div>
+  `;
+}
+
+/* ====== ÚKOL 1 ====== */
+function showTask1() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Úkol 1</h2>
+      <p>Odpověz na 4 otázky stejně jako tvoje nevěsta:</p>
+      <ul>
+        <li>Kdy je ženich nejvíc neodolatelný?</li>
+        <li>Jakou část jeho těla má nejraději?</li>
+        <li>Jaké jídlo od něj miluje?</li>
+        <li>Jaký je jeho největší sen?</li>
+      </ul>
+      <p>Zadej heslo:</p>
+      <input id="task1-pass" type="text">
+      <button class="pm-btn" onclick="checkTask1()">Potvrdit</button>
+      <p id="task1-error" class="error">Špatné heslo</p>
+    </div>
+  `;
+}
+
+function checkTask1() {
+  const input = document.getElementById("task1-pass").value.trim().toLowerCase();
+  if (input === "skalice") {
+    triggerConfetti();
+    showSecondMission();
+  } else {
+    document.getElementById("task1-error").style.display = "block";
+  }
+}
+
+/* ====== MÍSTO 2 ====== */
+function showSecondMission() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Místo 2</h2>
+      <p>Jeď do Skalice a přestup na vlak do <strong>Boskovic</strong>.</p>
+      <button class="pm-btn" onclick="showTask2()">Zobraz úkol</button>
+    </div>
+  `;
+}
+
+/* ====== ÚKOL 2 ====== */
+function showTask2() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Úkol 2</h2>
+      <p>Najdi cizího člověka a udělej si s ním selfíčko na instax.<br>
+      Na hlavě musíš mít něco směšného.</p>
+      <p>Zadej heslo:</p>
+      <input id="task2-pass" type="text">
+      <button class="pm-btn" onclick="checkTask2()">Potvrdit</button>
+      <p id="task2-error" class="error">Špatné heslo</p>
+    </div>
+  `;
+}
+
+function checkTask2() {
+  const input = document.getElementById("task2-pass").value.trim().toLowerCase();
+  if (input === "uchylak") {
+    triggerConfetti();
+    showTask3Button();
+  } else {
+    document.getElementById("task2-error").style.display = "block";
+  }
+}
+
+/* ====== MÍSTO 3 ====== */
+function showTask3Button() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Místo 3</h2>
+      <p>Běž na <strong>Hrádkov – rozcestí</strong>.</p>
+      <button class="pm-btn" onclick="showTask3()">Zobraz úkol</button>
+    </div>
+  `;
+}
+
+/* ====== ÚKOL 3 ====== */
+function showTask3() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Úkol 3</h2>
+      <p>Zavolej na číslo <strong>+44 7745 343 993</strong> a zeptej se na heslo.</p>
+      <p>Zadej heslo:</p>
+      <input id="task3-pass" type="text">
+      <button class="pm-btn" onclick="checkTask3()">Potvrdit</button>
+      <p id="task3-error" class="error">Špatné heslo</p>
+    </div>
+  `;
+}
+
+function checkTask3() {
+  const input = document.getElementById("task3-pass").value.trim().toLowerCase();
+  if (input === "megaklidecek") {
+    triggerConfetti();
+    showFourthMission();
+  } else {
+    document.getElementById("task3-error").style.display = "block";
+  }
+}
+
+/* ====== MÍSTO 4 ====== */
+function showFourthMission() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Místo 4</h2>
+      <p>Pokračuj na <strong>Velenov – rozcestí</strong>.</p>
+      <button class="pm-btn" onclick="showTask4()">Zobraz úkol</button>
+    </div>
+  `;
+}
+
+/* ====== ÚKOL 4 ====== */
+function showTask4() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Úkol 4</h2>
+      <p>Každému řekni jednu věc, kterou na něm obdivuješ – dramaticky jako v telenovele.</p>
+      <p>Zadej heslo:</p>
+      <input id="task4-pass" type="text">
+      <button class="pm-btn" onclick="checkTask4()">Potvrdit</button>
+      <p id="task4-error" class="error">Špatné heslo</p>
+    </div>
+  `;
+}
+
+function checkTask4() {
+  const input = document.getElementById("task4-pass").value.trim().toLowerCase();
+  if (input === "prcina") {
+    triggerConfetti();
+    showFifthMission();
+  } else {
+    document.getElementById("task4-error").style.display = "block";
+  }
+}
+
+/* ====== MÍSTO 5 ====== */
+function showFifthMission() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Místo 5</h2>
+      <p>Běž na <strong>Suchý – ATC</strong>.</p>
+      <button class="pm-btn" onclick="showTask5()">Zobraz úkol</button>
+    </div>
+  `;
+}
+
+/* ====== ÚKOL 5 ====== */
+function showTask5() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>Úkol 5</h2>
+      <p>S písní, kterou ti vybereme, dojdi k Jednotě a zpět (cca 200 m).</p>
+      <p>Zadej poslední heslo:</p>
+      <input id="task5-pass" type="text">
+      <button class="pm-btn" onclick="checkTask5()">Potvrdit</button>
+      <p id="task5-error" class="error">Špatné heslo</p>
+    </div>
+  `;
+}
+
+function checkTask5() {
+  const input = document.getElementById("task5-pass").value.trim().toLowerCase();
+  if (input === "pohodex") {
+    triggerConfetti();
+    showFinalMission();
+  } else {
+    document.getElementById("task5-error").style.display = "block";
+  }
+}
+
+/* ====== FINÁLE ====== */
+function showFinalMission() {
+  const missions = document.getElementById("missions");
+  missions.innerHTML += `
+    <div class="pm-card">
+      <h2>FINÁLE</h2>
+      <p>Jdi na <strong>Suchý ev. č. 345</strong>.</p>
+      <p><a href="https://mapy.cz/zakladni?source=addr&id=22637433" target="_blank" style="color:#00eaff;">Otevřít v mapách</a></p>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
